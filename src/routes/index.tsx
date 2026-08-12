@@ -1,5 +1,6 @@
+import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import logo from "@/assets/dao-logo-on-dark.png";
+import logo from "@/assets/dao-logo-on-light.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -105,6 +106,97 @@ function Mono({ children }: { children: React.ReactNode }) {
   return <span className="font-mono text-[0.9em]">{children}</span>;
 }
 
+const GHOST =
+  "inline-flex items-center gap-2 rounded border border-border bg-card px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-accent-link hover:text-accent-link";
+
+const NETWORKS = {
+  mainnet: {
+    chainId: "0x97",
+    chainName: "Redbelly Network Mainnet",
+    rpcUrls: ["https://governors.mainnet.redbelly.network"],
+    nativeCurrency: { name: "RBNT", symbol: "RBNT", decimals: 18 },
+    blockExplorerUrls: ["https://redbelly.routescan.io"],
+  },
+  testnet: {
+    chainId: "0x99",
+    chainName: "Redbelly Network Testnet",
+    rpcUrls: ["https://governors.testnet.redbelly.network"],
+    nativeCurrency: { name: "RBNT", symbol: "RBNT", decimals: 18 },
+    blockExplorerUrls: ["https://redbelly.testnet.routescan.io"],
+  },
+} as const;
+
+async function addNetwork(network: keyof typeof NETWORKS) {
+  const eth = (window as unknown as { ethereum?: { request: (a: unknown) => Promise<unknown> } })
+    .ethereum;
+  if (!eth) return false;
+  try {
+    await eth.request({ method: "wallet_addEthereumChain", params: [NETWORKS[network]] });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function RpcRow({ network, url }: { network: keyof typeof NETWORKS; url: string }) {
+  return (
+    <button
+      type="button"
+      onClick={() => void addNetwork(network)}
+      title="Add this network to your wallet"
+      className="text-left font-mono text-[0.9em] break-all text-accent-link underline decoration-accent-link/40 underline-offset-2 hover:decoration-accent-link"
+    >
+      {url}
+    </button>
+  );
+}
+
+function AddToWallet({ network }: { network: keyof typeof NETWORKS }) {
+  const [state, setState] = React.useState<"idle" | "done" | "error">("idle");
+
+  const add = async () => {
+    setState((await addNetwork(network)) ? "done" : "error");
+  };
+
+  return (
+    <div className="mt-3">
+      <button type="button" onClick={add} className={GHOST}>
+        Add to wallet
+      </button>
+      {state === "done" ? (
+        <p className="mt-2 text-sm text-ok">Network sent to your wallet.</p>
+      ) : null}
+      {state === "error" ? (
+        <p className="mt-2 text-sm text-ink-muted">
+          No EVM wallet detected, or the request was rejected. Add the details manually.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function CopyAddress({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = React.useState(false);
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      <span className="text-sm text-ink-muted">{label}</span>
+      <code className="font-mono text-[0.85rem] break-all text-ink">{value}</code>
+      <button
+        type="button"
+        onClick={() => {
+          void navigator.clipboard?.writeText(value);
+          setCopied(true);
+          window.setTimeout(() => setCopied(false), 1500);
+        }}
+        className="rounded border border-border bg-card px-2 py-1 text-xs font-semibold text-ink transition-colors hover:border-accent-link hover:text-accent-link"
+      >
+        {copied ? "Copied" : "Copy"}
+      </button>
+    </div>
+  );
+}
+
+
 function StartHere() {
   return (
     <div className="min-h-screen bg-background text-base text-foreground">
@@ -134,20 +226,10 @@ function StartHere() {
             community-verified.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <a
-              href={PDF_URL}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
-            >
+            <a href={PDF_URL} target="_blank" rel="noreferrer noopener" className={GHOST}>
               View full PDF
             </a>
-            <a
-              href={DOCX_URL}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="rounded border border-border px-4 py-2 text-sm font-semibold text-ink hover:border-accent-link hover:text-accent-link"
-            >
+            <a href={DOCX_URL} target="_blank" rel="noreferrer noopener" className={GHOST}>
               View full DOCX
             </a>
           </div>
@@ -157,7 +239,7 @@ function StartHere() {
           {/* 1. Scam warning */}
           <section
             id="scam-warning"
-            className="rounded-lg border border-primary bg-card scroll-mt-20"
+            className="rounded-lg border border-border bg-card scroll-mt-20"
             aria-labelledby="scam-warning-title"
           >
             <header className="flex flex-wrap items-baseline gap-x-3 px-5 py-4 sm:px-6">
@@ -165,11 +247,11 @@ function StartHere() {
               <h2 id="scam-warning-title" className="text-xl font-semibold sm:text-2xl">
                 Scam warning
               </h2>
-              <span className="rounded bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
+              <span className="rounded bg-[#fef3c7] px-2 py-0.5 text-xs font-semibold text-warn">
                 Read first
               </span>
             </header>
-            <div className="border-t border-primary px-5 py-5 sm:px-6 sm:py-6">
+            <div className="border-t border-border px-5 py-5 sm:px-6 sm:py-6">
               <p className="max-w-[70ch] text-ink-2">
                 Redbelly staff, moderators, and official support will never DM you first. Any
                 direct message claiming to be from Redbelly staff, offering support, or announcing
@@ -207,8 +289,9 @@ function StartHere() {
             </p>
             <p className="mt-4 max-w-[70ch] text-ink-2">
               Redbelly gates its own Layer 1 behind identity verification through the Redbelly
-              Access portal. Wrapped RBNT on Ethereum or other chains is a standard ERC-20 with no
-              Redbelly-side identity check.
+              Access portal at <A href="https://access.redbelly.network/">access.redbelly.network</A>
+              . Wrapped RBNT on Ethereum or other chains is a standard ERC-20 with no Redbelly-side
+              identity check.
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <div className="rounded-lg border border-hairline bg-nested p-4">
@@ -286,59 +369,67 @@ function StartHere() {
           {/* 3. Network setup */}
           <Card id="network" step="03" title="Network setup" kicker="Mainnet 151, Testnet 153">
             <div className="grid gap-4 lg:grid-cols-2">
-              <KeyValue
-                label="Mainnet"
-                rows={[
-                  { k: "Chain ID", v: <Mono>151</Mono> },
-                  { k: "Currency symbol", v: "RBNT (18 decimals)" },
-                  {
-                    k: "RPC URL",
-                    v: (
-                      <Mono>
-                        <A href="https://governors.mainnet.redbelly.network">
-                          https://governors.mainnet.redbelly.network
-                        </A>
-                      </Mono>
-                    ),
-                  },
-                  {
-                    k: "Block explorer",
-                    v: (
-                      <Mono>
-                        <A href="https://redbelly.routescan.io">https://redbelly.routescan.io</A>
-                      </Mono>
-                    ),
-                  },
-                ]}
-              />
-              <KeyValue
-                label="Testnet"
-                rows={[
-                  { k: "Chain ID", v: <Mono>153</Mono> },
-                  { k: "Currency symbol", v: "RBNT (18 decimals)" },
-                  {
-                    k: "RPC URL",
-                    v: (
-                      <Mono>
-                        <A href="https://governors.testnet.redbelly.network">
-                          https://governors.testnet.redbelly.network
-                        </A>
-                      </Mono>
-                    ),
-                  },
-                  {
-                    k: "Block explorer",
-                    v: (
-                      <Mono>
-                        <A href="https://redbelly.testnet.routescan.io">
-                          https://redbelly.testnet.routescan.io
-                        </A>
-                      </Mono>
-                    ),
-                  },
-                ]}
-              />
+              <div>
+                <KeyValue
+                  label="Mainnet"
+                  rows={[
+                    { k: "Chain ID", v: <Mono>151</Mono> },
+                    { k: "Currency symbol", v: "RBNT (18 decimals)" },
+                    {
+                      k: "RPC URL",
+                      v: (
+                        <RpcRow
+                          network="mainnet"
+                          url="https://governors.mainnet.redbelly.network"
+                        />
+                      ),
+                    },
+                    {
+                      k: "Block explorer",
+                      v: (
+                        <Mono>
+                          <A href="https://redbelly.routescan.io">https://redbelly.routescan.io</A>
+                        </Mono>
+                      ),
+                    },
+                  ]}
+                />
+                <AddToWallet network="mainnet" />
+              </div>
+              <div>
+                <KeyValue
+                  label="Testnet"
+                  rows={[
+                    { k: "Chain ID", v: <Mono>153</Mono> },
+                    { k: "Currency symbol", v: "RBNT (18 decimals)" },
+                    {
+                      k: "RPC URL",
+                      v: (
+                        <RpcRow
+                          network="testnet"
+                          url="https://governors.testnet.redbelly.network"
+                        />
+                      ),
+                    },
+                    {
+                      k: "Block explorer",
+                      v: (
+                        <Mono>
+                          <A href="https://redbelly.testnet.routescan.io">
+                            https://redbelly.testnet.routescan.io
+                          </A>
+                        </Mono>
+                      ),
+                    },
+                  ]}
+                />
+                <AddToWallet network="testnet" />
+              </div>
             </div>
+            <p className="mt-4 max-w-[70ch] text-ink-2">
+              Clicking an RPC URL or the Add to wallet button sends the network details straight to
+              your wallet.
+            </p>
             <p className="mt-4 max-w-[70ch] text-ink-2">
               Mainnet and testnet never share a field. Chain ID, RPC, and explorer are each unique
               to their own network.
@@ -370,6 +461,18 @@ function StartHere() {
                 {
                   t: "Contract address",
                   d: "Confirm the wRBNT contract address is added correctly in your wallet. A missing or wrong contract address is the most common cause of a zero display.",
+                  extra: (
+                    <>
+                      <CopyAddress
+                        label="Ethereum"
+                        value="0xb45ffb51984d626ee758b336c61cf20990c6bf13"
+                      />
+                      <CopyAddress
+                        label="Base"
+                        value="0x020940df9f5e77338a094d55b5b5914122a804a5"
+                      />
+                    </>
+                  ),
                 },
                 {
                   t: "Try another wallet",
@@ -378,6 +481,14 @@ function StartHere() {
                 {
                   t: "Check the block explorer",
                   d: "If it is still not showing, look up your wallet address directly on Routescan. If the balance is there, your funds are safe and the discrepancy is on the wallet's display side only.",
+                  extra: (
+                    <p className="mt-3 text-sm text-ink-2">
+                      Redbelly network explorer:{" "}
+                      <Mono>
+                        <A href="https://redbelly.routescan.io">https://redbelly.routescan.io</A>
+                      </Mono>
+                    </p>
+                  ),
                 },
                 {
                   t: "Check the source transaction",
@@ -392,6 +503,7 @@ function StartHere() {
                   <div>
                     <p className="font-semibold">{s.t}</p>
                     <p className="mt-1 max-w-[70ch] text-ink-2">{s.d}</p>
+                    {s.extra ?? null}
                   </div>
                 </li>
               ))}
@@ -433,37 +545,90 @@ function StartHere() {
                   Decentralized exchanges
                 </h3>
                 <dl className="mt-3 space-y-3 text-ink-2">
-                  <div>
-                    <dt className="text-sm text-ink-muted">Ethereum</dt>
-                    <dd>
-                      1inch, OKX DEX, and Bitget Web3, swapping against the RBNT contract on
-                      Ethereum.
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-ink-muted">Base</dt>
-                    <dd>KyberSwap, 1inch, OKX DEX, and Bitget Web3.</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-ink-muted">Solana</dt>
-                    <dd>Raydium.</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-ink-muted">Redbelly native</dt>
-                    <dd>
-                      <A href="https://reddex.io">RedDex</A>, swapping directly on-chain against
-                      native RBNT.
-                    </dd>
-                  </div>
+                  {[
+                    {
+                      label: "Ethereum Network",
+                      items: [
+                        {
+                          n: "1inch",
+                          h: "https://1inch.com/swap?src=1:0xb45ffb51984d626ee758b336c61cf20990c6bf13&dst=1:USDT",
+                        },
+                        {
+                          n: "OKX DEX",
+                          h: "https://web3.okx.com/dex-swap?chain=ethereum,ethereum&token=0xb45ffb51984d626ee758b336c61cf20990c6bf13,0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+                        },
+                        {
+                          n: "Bitget Web3",
+                          h: "https://web3.bitget.com/en/swap/eth/0xb45fFB51984d626Ee758b336C61Cf20990c6bF13",
+                        },
+                      ],
+                    },
+                    {
+                      label: "Base Network",
+                      items: [
+                        {
+                          n: "KyberSwap",
+                          h: "https://kyberswap.com/swap/base/0x020940df9f5e77338a094d55b5b5914122a804a5-to-usdc",
+                        },
+                        {
+                          n: "1inch",
+                          h: "https://1inch.com/swap?src=8453:0x020940df9f5e77338a094d55b5b5914122a804a5&dst=8453:USDC",
+                        },
+                        {
+                          n: "OKX DEX",
+                          h: "https://web3.okx.com/dex-swap?chain=base,base&token=0x020940df9f5e77338a094d55b5b5914122a804a5,0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca",
+                        },
+                        {
+                          n: "Bitget Web3",
+                          h: "https://web3.bitget.com/en/swap/base/0x020940df9F5E77338a094D55b5B5914122a804A5",
+                        },
+                      ],
+                    },
+                    {
+                      label: "Solana Network",
+                      items: [
+                        {
+                          n: "Raydium",
+                          h: "https://raydium.io/swap/?inputMint=2GBVt2ENvbHepuJMWYTPkkfpWUabAhsaXToYw8UphxS3&outputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        },
+                      ],
+                    },
+                    {
+                      label: "Redbelly native",
+                      items: [
+                        {
+                          n: "Reddex",
+                          h: "https://www.reddex.io/swap?chain=redbelly&inputCurrency=NATIVE&outputCurrency=0x8201c02d4AB2214471E8C3AD6475C8b0CD9F2D06",
+                        },
+                      ],
+                    },
+                  ].map((g) => (
+                    <div key={g.label}>
+                      <dt className="text-sm text-ink-muted">{g.label}</dt>
+                      <dd className="mt-1 flex flex-wrap gap-x-2">
+                        {g.items.map((x, i) => (
+                          <span key={x.n}>
+                            <A href={x.h}>{x.n}</A>
+                            {i < g.items.length - 1 ? "," : ""}
+                          </span>
+                        ))}
+                      </dd>
+                    </div>
+                  ))}
                 </dl>
               </div>
               <div className="rounded-lg border border-hairline bg-nested p-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
                   Bridges
                 </h3>
-                <p className="mt-3 text-ink-2">
-                  To move RBNT between chains: Lucid Labs Bridge, or the RedDex Bridge.
-                </p>
+                <ul className="mt-3 space-y-2 text-ink-2">
+                  <li>
+                    <A href="https://bridge.lucidlabs.fi/">Lucid Labs Bridge</A>
+                  </li>
+                  <li>
+                    <A href="https://www.reddex.io/bridge">Reddex Bridge</A>
+                  </li>
+                </ul>
                 <p className="mt-3 text-ink-2">
                   Native RBNT and wrapped RBNT are separate assets on different chains. Check which
                   one a venue lists before trading.
@@ -490,17 +655,17 @@ function StartHere() {
               relying on a snapshot here.
             </p>
             <a
-              href="https://reddex.io/stake"
+              href="https://www.reddex.io/stake"
               target="_blank"
               rel="noreferrer noopener"
-              className="mt-5 inline-block rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+              className={`mt-5 ${GHOST}`}
             >
-              Stake on RedDex
+              Stake on Reddex
             </a>
             <Note>
               Source: staking mechanism confirmed against the Redbelly whitepaper (consensus and
               storage node staking). Live pool terms from{" "}
-              <A href="https://reddex.io/stake">reddex.io/stake</A>.
+              <A href="https://www.reddex.io/stake">reddex.io/stake</A>.
             </Note>
           </Card>
 

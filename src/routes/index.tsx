@@ -655,17 +655,17 @@ function StartHere() {
               relying on a snapshot here.
             </p>
             <a
-              href="https://reddex.io/stake"
+              href="https://www.reddex.io/stake"
               target="_blank"
               rel="noreferrer noopener"
-              className="mt-5 inline-block rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+              className={`mt-5 ${GHOST}`}
             >
-              Stake on RedDex
+              Stake on Reddex
             </a>
             <Note>
               Source: staking mechanism confirmed against the Redbelly whitepaper (consensus and
               storage node staking). Live pool terms from{" "}
-              <A href="https://reddex.io/stake">reddex.io/stake</A>.
+              <A href="https://www.reddex.io/stake">reddex.io/stake</A>.
             </Note>
           </Card>
 

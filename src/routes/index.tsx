@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import logo from "@/assets/dao-logo-on-dark.png";
+import logo from "@/assets/dao-logo-on-light.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -105,6 +105,86 @@ function Mono({ children }: { children: React.ReactNode }) {
   return <span className="font-mono text-[0.9em]">{children}</span>;
 }
 
+const GHOST =
+  "inline-flex items-center gap-2 rounded border border-border bg-card px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-accent-link hover:text-accent-link";
+
+const NETWORKS = {
+  mainnet: {
+    chainId: "0x97",
+    chainName: "Redbelly Network Mainnet",
+    rpcUrls: ["https://governors.mainnet.redbelly.network"],
+    nativeCurrency: { name: "RBNT", symbol: "RBNT", decimals: 18 },
+    blockExplorerUrls: ["https://redbelly.routescan.io"],
+  },
+  testnet: {
+    chainId: "0x99",
+    chainName: "Redbelly Network Testnet",
+    rpcUrls: ["https://governors.testnet.redbelly.network"],
+    nativeCurrency: { name: "RBNT", symbol: "RBNT", decimals: 18 },
+    blockExplorerUrls: ["https://redbelly.testnet.routescan.io"],
+  },
+} as const;
+
+function AddToWallet({ network }: { network: keyof typeof NETWORKS }) {
+  const [state, setState] = React.useState<"idle" | "done" | "error">("idle");
+
+  const add = async () => {
+    const eth = (window as unknown as { ethereum?: { request: (a: unknown) => Promise<unknown> } })
+      .ethereum;
+    if (!eth) {
+      setState("error");
+      return;
+    }
+    try {
+      await eth.request({
+        method: "wallet_addEthereumChain",
+        params: [NETWORKS[network]],
+      });
+      setState("done");
+    } catch {
+      setState("error");
+    }
+  };
+
+  return (
+    <div className="mt-3">
+      <button type="button" onClick={add} className={GHOST}>
+        Add to wallet
+      </button>
+      {state === "done" ? (
+        <p className="mt-2 text-sm text-ok">Network sent to your wallet.</p>
+      ) : null}
+      {state === "error" ? (
+        <p className="mt-2 text-sm text-ink-muted">
+          No EVM wallet detected, or the request was rejected. Add the details manually.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function CopyAddress({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = React.useState(false);
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      <span className="text-sm text-ink-muted">{label}</span>
+      <code className="font-mono text-[0.85rem] break-all text-ink">{value}</code>
+      <button
+        type="button"
+        onClick={() => {
+          void navigator.clipboard?.writeText(value);
+          setCopied(true);
+          window.setTimeout(() => setCopied(false), 1500);
+        }}
+        className="rounded border border-border bg-card px-2 py-1 text-xs font-semibold text-ink transition-colors hover:border-accent-link hover:text-accent-link"
+      >
+        {copied ? "Copied" : "Copy"}
+      </button>
+    </div>
+  );
+}
+
+
 function StartHere() {
   return (
     <div className="min-h-screen bg-background text-base text-foreground">
@@ -134,20 +214,10 @@ function StartHere() {
             community-verified.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <a
-              href={PDF_URL}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
-            >
+            <a href={PDF_URL} target="_blank" rel="noreferrer noopener" className={GHOST}>
               View full PDF
             </a>
-            <a
-              href={DOCX_URL}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="rounded border border-border px-4 py-2 text-sm font-semibold text-ink hover:border-accent-link hover:text-accent-link"
-            >
+            <a href={DOCX_URL} target="_blank" rel="noreferrer noopener" className={GHOST}>
               View full DOCX
             </a>
           </div>
@@ -157,7 +227,7 @@ function StartHere() {
           {/* 1. Scam warning */}
           <section
             id="scam-warning"
-            className="rounded-lg border border-primary bg-card scroll-mt-20"
+            className="rounded-lg border border-border bg-card scroll-mt-20"
             aria-labelledby="scam-warning-title"
           >
             <header className="flex flex-wrap items-baseline gap-x-3 px-5 py-4 sm:px-6">
@@ -165,11 +235,11 @@ function StartHere() {
               <h2 id="scam-warning-title" className="text-xl font-semibold sm:text-2xl">
                 Scam warning
               </h2>
-              <span className="rounded bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
+              <span className="rounded bg-[#fef3c7] px-2 py-0.5 text-xs font-semibold text-warn">
                 Read first
               </span>
             </header>
-            <div className="border-t border-primary px-5 py-5 sm:px-6 sm:py-6">
+            <div className="border-t border-border px-5 py-5 sm:px-6 sm:py-6">
               <p className="max-w-[70ch] text-ink-2">
                 Redbelly staff, moderators, and official support will never DM you first. Any
                 direct message claiming to be from Redbelly staff, offering support, or announcing
@@ -207,8 +277,9 @@ function StartHere() {
             </p>
             <p className="mt-4 max-w-[70ch] text-ink-2">
               Redbelly gates its own Layer 1 behind identity verification through the Redbelly
-              Access portal. Wrapped RBNT on Ethereum or other chains is a standard ERC-20 with no
-              Redbelly-side identity check.
+              Access portal at <A href="https://access.redbelly.network/">access.redbelly.network</A>
+              . Wrapped RBNT on Ethereum or other chains is a standard ERC-20 with no Redbelly-side
+              identity check.
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <div className="rounded-lg border border-hairline bg-nested p-4">

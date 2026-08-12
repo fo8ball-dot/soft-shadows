@@ -126,25 +126,36 @@ const NETWORKS = {
   },
 } as const;
 
+async function addNetwork(network: keyof typeof NETWORKS) {
+  const eth = (window as unknown as { ethereum?: { request: (a: unknown) => Promise<unknown> } })
+    .ethereum;
+  if (!eth) return false;
+  try {
+    await eth.request({ method: "wallet_addEthereumChain", params: [NETWORKS[network]] });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function RpcRow({ network, url }: { network: keyof typeof NETWORKS; url: string }) {
+  return (
+    <button
+      type="button"
+      onClick={() => void addNetwork(network)}
+      title="Add this network to your wallet"
+      className="text-left font-mono text-[0.9em] break-all text-accent-link underline decoration-accent-link/40 underline-offset-2 hover:decoration-accent-link"
+    >
+      {url}
+    </button>
+  );
+}
+
 function AddToWallet({ network }: { network: keyof typeof NETWORKS }) {
   const [state, setState] = React.useState<"idle" | "done" | "error">("idle");
 
   const add = async () => {
-    const eth = (window as unknown as { ethereum?: { request: (a: unknown) => Promise<unknown> } })
-      .ethereum;
-    if (!eth) {
-      setState("error");
-      return;
-    }
-    try {
-      await eth.request({
-        method: "wallet_addEthereumChain",
-        params: [NETWORKS[network]],
-      });
-      setState("done");
-    } catch {
-      setState("error");
-    }
+    setState((await addNetwork(network)) ? "done" : "error");
   };
 
   return (

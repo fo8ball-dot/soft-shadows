@@ -369,59 +369,67 @@ function StartHere() {
           {/* 3. Network setup */}
           <Card id="network" step="03" title="Network setup" kicker="Mainnet 151, Testnet 153">
             <div className="grid gap-4 lg:grid-cols-2">
-              <KeyValue
-                label="Mainnet"
-                rows={[
-                  { k: "Chain ID", v: <Mono>151</Mono> },
-                  { k: "Currency symbol", v: "RBNT (18 decimals)" },
-                  {
-                    k: "RPC URL",
-                    v: (
-                      <Mono>
-                        <A href="https://governors.mainnet.redbelly.network">
-                          https://governors.mainnet.redbelly.network
-                        </A>
-                      </Mono>
-                    ),
-                  },
-                  {
-                    k: "Block explorer",
-                    v: (
-                      <Mono>
-                        <A href="https://redbelly.routescan.io">https://redbelly.routescan.io</A>
-                      </Mono>
-                    ),
-                  },
-                ]}
-              />
-              <KeyValue
-                label="Testnet"
-                rows={[
-                  { k: "Chain ID", v: <Mono>153</Mono> },
-                  { k: "Currency symbol", v: "RBNT (18 decimals)" },
-                  {
-                    k: "RPC URL",
-                    v: (
-                      <Mono>
-                        <A href="https://governors.testnet.redbelly.network">
-                          https://governors.testnet.redbelly.network
-                        </A>
-                      </Mono>
-                    ),
-                  },
-                  {
-                    k: "Block explorer",
-                    v: (
-                      <Mono>
-                        <A href="https://redbelly.testnet.routescan.io">
-                          https://redbelly.testnet.routescan.io
-                        </A>
-                      </Mono>
-                    ),
-                  },
-                ]}
-              />
+              <div>
+                <KeyValue
+                  label="Mainnet"
+                  rows={[
+                    { k: "Chain ID", v: <Mono>151</Mono> },
+                    { k: "Currency symbol", v: "RBNT (18 decimals)" },
+                    {
+                      k: "RPC URL",
+                      v: (
+                        <RpcRow
+                          network="mainnet"
+                          url="https://governors.mainnet.redbelly.network"
+                        />
+                      ),
+                    },
+                    {
+                      k: "Block explorer",
+                      v: (
+                        <Mono>
+                          <A href="https://redbelly.routescan.io">https://redbelly.routescan.io</A>
+                        </Mono>
+                      ),
+                    },
+                  ]}
+                />
+                <AddToWallet network="mainnet" />
+              </div>
+              <div>
+                <KeyValue
+                  label="Testnet"
+                  rows={[
+                    { k: "Chain ID", v: <Mono>153</Mono> },
+                    { k: "Currency symbol", v: "RBNT (18 decimals)" },
+                    {
+                      k: "RPC URL",
+                      v: (
+                        <RpcRow
+                          network="testnet"
+                          url="https://governors.testnet.redbelly.network"
+                        />
+                      ),
+                    },
+                    {
+                      k: "Block explorer",
+                      v: (
+                        <Mono>
+                          <A href="https://redbelly.testnet.routescan.io">
+                            https://redbelly.testnet.routescan.io
+                          </A>
+                        </Mono>
+                      ),
+                    },
+                  ]}
+                />
+                <AddToWallet network="testnet" />
+              </div>
             </div>
+            <p className="mt-4 max-w-[70ch] text-ink-2">
+              Clicking an RPC URL or the Add to wallet button sends the network details straight to
+              your wallet.
+            </p>
             <p className="mt-4 max-w-[70ch] text-ink-2">
               Mainnet and testnet never share a field. Chain ID, RPC, and explorer are each unique
               to their own network.

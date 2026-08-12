@@ -1,3 +1,4 @@
+import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import logo from "@/assets/dao-logo-on-light.png";
 

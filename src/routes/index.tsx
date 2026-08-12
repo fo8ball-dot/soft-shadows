@@ -461,6 +461,18 @@ function StartHere() {
                 {
                   t: "Contract address",
                   d: "Confirm the wRBNT contract address is added correctly in your wallet. A missing or wrong contract address is the most common cause of a zero display.",
+                  extra: (
+                    <>
+                      <CopyAddress
+                        label="Ethereum"
+                        value="0xb45ffb51984d626ee758b336c61cf20990c6bf13"
+                      />
+                      <CopyAddress
+                        label="Base"
+                        value="0x020940df9f5e77338a094d55b5b5914122a804a5"
+                      />
+                    </>
+                  ),
                 },
                 {
                   t: "Try another wallet",
@@ -469,6 +481,14 @@ function StartHere() {
                 {
                   t: "Check the block explorer",
                   d: "If it is still not showing, look up your wallet address directly on Routescan. If the balance is there, your funds are safe and the discrepancy is on the wallet's display side only.",
+                  extra: (
+                    <p className="mt-3 text-sm text-ink-2">
+                      Redbelly network explorer:{" "}
+                      <Mono>
+                        <A href="https://redbelly.routescan.io">https://redbelly.routescan.io</A>
+                      </Mono>
+                    </p>
+                  ),
                 },
                 {
                   t: "Check the source transaction",
@@ -483,6 +503,7 @@ function StartHere() {
                   <div>
                     <p className="font-semibold">{s.t}</p>
                     <p className="mt-1 max-w-[70ch] text-ink-2">{s.d}</p>
+                    {s.extra ?? null}
                   </div>
                 </li>
               ))}
